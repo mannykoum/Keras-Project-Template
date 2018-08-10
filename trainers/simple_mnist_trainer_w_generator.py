@@ -1,12 +1,14 @@
 
 from base.base_trainer import BaseTrain
-import os
+import os, psutil
 from keras.callbacks import ModelCheckpoint, TensorBoard
 
-
-class SimpleMnistModelTrainer(BaseTrain):
-    def __init__(self, model, data, config):
-        super(SimpleMnistModelTrainer, self).__init__(model, data, config)
+class SimpleMnistModelTrainerWGenerator(BaseTrain):
+    def __init__(self, model, train_generator, config, validation_generator=None):
+        super(SimpleMnistModelTrainerWGenerator, self).__init__(model, 
+                                                        train_generator, config)
+        self.train_generator = train_generator
+        self.validation_generator = validation_generator
         self.callbacks = []
         self.loss = []
         self.acc = []
@@ -33,7 +35,6 @@ class SimpleMnistModelTrainer(BaseTrain):
                 write_graph=self.config.callbacks.tensorboard_write_graph,
             )
         )
-        
         # if the config has the debug flag on, turn on tfdbg (TODO: make it work)
         if hasattr(self.config,"debug"):
             if (self.config.debug == True):
@@ -54,16 +55,21 @@ class SimpleMnistModelTrainer(BaseTrain):
             self.callbacks.append(experiment.get_keras_callback())
 
     def train(self):
-        print(self.data[0].shape)
-        print(self.data[1].shape)
-        history = self.model.fit(
-            self.data[0], self.data[1],
+        print("!!!!! ****  in train 1/2  **** !!!!")
+        history = self.model.fit_generator(
+            generator=self.train_generator,
             epochs=self.config.trainer.num_epochs,
+            # steps_per_epoch=(len(os.listdir(self.config.data_loader.train_dir))\
+            #  / self.config.trainer.batch_size), WILL USE __len__()
             verbose=self.config.trainer.verbose_training,
-            batch_size=self.config.trainer.batch_size,
-            validation_split=self.config.trainer.validation_split,
-            callbacks=self.callbacks
+            validation_data=self.validation_generator,
+            callbacks=self.callbacks,
+            use_multiprocessing=False,
+            workers=12,#psutil.cpu_count(),
+            # max_queue_size=20,
+            shuffle=True
         )
+        print("!!!!! ****  in train 2/2  **** !!!!")
         self.loss.extend(history.history['loss'])
         self.acc.extend(history.history['acc'])
         self.val_loss.extend(history.history['val_loss'])

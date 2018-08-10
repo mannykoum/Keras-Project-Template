@@ -9,5 +9,11 @@ def get_args():
         metavar='C',
         default='None',
         help='The Configuration file')
+    argparser.add_argument(
+        '-d', '--debug',
+        action='store_true',
+        dest='debug',
+        default='False',
+        help='Turns debugging on')
     args = argparser.parse_args()
     return args

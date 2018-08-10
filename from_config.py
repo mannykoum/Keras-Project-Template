@@ -11,6 +11,15 @@ def main():
         args = get_args()
         config = process_config(args.config)
 
+        # if debug mode is on, add it on the config dotmap
+        if args.debug == True:
+            from dotmap import DotMap
+            config.debug = True
+
+        # comet_ml needs to be imported before Keras
+        if hasattr(config,"comet_api_key"):
+            from comet_ml import Experiment
+
         # create the experiments dirs
         create_dirs([config.callbacks.tensorboard_log_dir, config.callbacks.checkpoint_dir])
 
