@@ -1,6 +1,6 @@
 
 from base.base_trainer import BaseTrain
-import os, psutil
+import os, psutil, math
 from keras.callbacks import ModelCheckpoint, TensorBoard
 
 class SimpleMnistModelTrainerWGenerator(BaseTrain):
@@ -17,6 +17,7 @@ class SimpleMnistModelTrainerWGenerator(BaseTrain):
         self.init_callbacks()
 
     def init_callbacks(self):
+        # TODO: figure out LearningRateScheduler callback with polydecay maybe
         self.callbacks.append(
             ModelCheckpoint(
                 filepath=os.path.join(self.config.callbacks.checkpoint_dir, 
@@ -59,12 +60,16 @@ class SimpleMnistModelTrainerWGenerator(BaseTrain):
         history = self.model.fit_generator(
             generator=self.train_generator,
             epochs=self.config.trainer.num_epochs,
-            # steps_per_epoch=(len(os.listdir(self.config.data_loader.train_dir))\
-            #  / self.config.trainer.batch_size), WILL USE __len__()
+            steps_per_epoch=int(math.ceil(34564/float(self.config.trainer.batch_size))),
+            # math.ceil(len(os.listdir(self.config.data_loader.train_dir))\
+            #  / float(self.config.trainer.batch_size)), # WILL USE __len__() if left
             verbose=self.config.trainer.verbose_training,
             validation_data=self.validation_generator,
+            validation_steps=int(math.ceil(8640/float(self.config.trainer.batch_size))),
+            # math.ceil(len(os.listdir(self.config.data_loader.test_dir))\
+            #  / float(self.config.trainer.batch_size)),
             callbacks=self.callbacks,
-            use_multiprocessing=False,
+            use_multiprocessing=True,
             workers=12,#psutil.cpu_count(),
             # max_queue_size=20,
             shuffle=True

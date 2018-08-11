@@ -1,6 +1,7 @@
 {
   "exp": {
-    "name": "simple_mnist"
+    "name": "simple_mnist",
+    "comet_api_key": "bRVfqqxqCjklK2gf4uLN9cuBZ"
   },
   "model":{
     "learning_rate": 0.001,

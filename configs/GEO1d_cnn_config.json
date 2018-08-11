@@ -1,13 +1,12 @@
 {
   "exp": {
-    "name": "geo1d-cnn",
-    "comet_api_key": "bRVfqqxqCjklK2gf4uLN9cuBZ"
+    "name": "geo1d-cnn"
   },
   "data_loader": {
-    "name": "geo1d_cnn_data_loader.GEO1dDataLoader",
+    "name": "geo1d_cnn_data_loader2.GEO1dDataLoader2",
     "input_shape": [-1, 256,256,1],
-    "train_dir":"/home/mannykoum/Manos_repos/tf_tutorial/GEO1d/data/geo1d/test/",
-    "test_dir":"/home/mannykoum/Manos_repos/tf_tutorial/GEO1d/data/geo1d/test2/"
+    "train_dir":"/home/mannykoum/Manos_repos/tf_tutorial/GEO1d/data_labeled/train/",
+    "test_dir":"/home/mannykoum/Manos_repos/tf_tutorial/GEO1d/data_labeled/valid/"
   },
   "model":{
     "name": "geo1d_cnn_model.GEO1dConvModel",
@@ -19,7 +18,7 @@
   "trainer":{
     "name": "simple_mnist_trainer_w_generator.SimpleMnistModelTrainerWGenerator",
     "num_epochs": 10,
-    "batch_size": 32,
+    "batch_size": 64,
     "validation_split":0.25,
     "verbose_training": true
   },

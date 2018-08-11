@@ -54,8 +54,8 @@ class SimpleMnistModelTrainer(BaseTrain):
             self.callbacks.append(experiment.get_keras_callback())
 
     def train(self):
-        print(self.data[0].shape)
-        print(self.data[1].shape)
+        # print(self.data[0].shape)
+        # print(self.data[1].shape)
         history = self.model.fit(
             self.data[0], self.data[1],
             epochs=self.config.trainer.num_epochs,
