@@ -17,8 +17,8 @@ from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten
 from keras.utils.vis_utils import plot_model
 from keras.utils import multi_gpu_model
 
-# For training
-
+# For training and callbacks
+from keras.callbacks import ModelCheckpoint, TensorBoard
 
 # Debugging flag
 debug = True
@@ -30,16 +30,15 @@ tf_config = tf.ConfigProto()
 # Don't pre-allocate memory; allocate as-needed
 tf_config.gpu_options.allow_growth = True
  
-# Only allow a total of half the GPU memory to be allocated
+# Only allow a fraction of the GPU memory to be allocated
 tf_config.gpu_options.per_process_gpu_memory_fraction = 0.9
  
 # Create a session with the above options specified.
 k.tensorflow_backend.set_session(tf.Session(config=tf_config))
-
+run_opts = tf.RunOptions(report_tensor_allocations_upon_oom=True)
 
 ### Load data 
-datagen = ImageDataGenerator(
-			    featurewise_center=False, 
+datagen = ImageDataGenerator(featurewise_center=False, 
 			    samplewise_center=False, 
 			    featurewise_std_normalization=False, 
 			    samplewise_std_normalization=False, 
@@ -64,11 +63,11 @@ datagen = ImageDataGenerator(
 tgt_size = (256,256)
 train_dir = "/home/mannykoum/Manos_repos/tf_tutorial/GEO1d/data_labeled/train/"
 test_dir = "/home/mannykoum/Manos_repos/tf_tutorial/GEO1d/data_labeled/valid/"
-batch_size = 64
+batch_size = 16 
 
 print('Creating the training data generator')
 train_generator = datagen.flow_from_directory(
-                        directory=train_dir,
+                        directory=test_dir,
                         target_size=tgt_size,
                         color_mode='grayscale',
                         batch_size=batch_size,
@@ -83,25 +82,27 @@ test_generator = datagen.flow_from_directory(
                         class_mode='sparse')
 
 ### Build the model architecture
-input_shape = [256, 256, 1]
+input_shape = (256, 256, 1)
 output_shape = 36
 
 model = Sequential()
 model.add(Conv2D(32, kernel_size=(3, 3),
                  activation='relu', 
                  input_shape=input_shape))
-model.add(Conv2D(64, (3, 3), activation='relu'))
+#model.add(Conv2D(64, (3, 3), activation='relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Dropout(0.25))
 model.add(Flatten())
-model.add(Dense(128, activation='relu'))
-model.add(Dropout(0.5))
+#model.add(Dense(128, activation='relu'))
+#model.add(Dropout(0.5))
 model.add(Dense(output_shape, activation='sigmoid'))
 
 # if the config has the debug flag on, turn on tfdbg (TODO: make it work)
+print("Before multi:")
 if (debug == True):
     print(model.summary())
-    plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
+    plot_model(model, to_file='model_plot.png', show_shapes=True, 
+            show_layer_names=True)
 
 # TODO: check num_gpus
 # On model saving
@@ -110,10 +111,21 @@ if (debug == True):
 # rather than the model returned by multi_gpu_model.
 model = multi_gpu_model(model, gpus=2)
 
+print("After multi:")
+if (debug == True):
+    print(model.summary())
+    plot_model(model, to_file='model_plot.png', show_shapes=True, 
+            show_layer_names=True)
+
 model.compile(
-      loss='sparse_categorical_crossentropy',
       optimizer='adadelta',
-      metrics=['accuracy'])
+      loss='sparse_categorical_crossentropy',
+      metrics=['accuracy'], 
+      loss_weights=None,
+      sample_weight_mode=None,
+      weighted_metrics=None,
+      target_tensors=None)
+      #options=run_opts)
 
 # model_checkpoint_dir = ''
 callbacks = []
@@ -140,6 +152,11 @@ callbacks = []
 num_epochs = 10
 print("!!!!! ****  in train 1/2  **** !!!!")
 # try:
+loss = []
+acc = []
+val_acc = []
+val_loss = []
+
 history = model.fit_generator(
     generator=train_generator,
     epochs=num_epochs,
