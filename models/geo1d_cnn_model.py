@@ -2,7 +2,7 @@ from base.base_model import BaseModel
 from keras.models import Sequential
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten
 from keras.utils.vis_utils import plot_model
-from keras.utils.training_utils import multi_gpu_model
+from keras.utils import multi_gpu_model
 
 
 class GEO1dConvModel(BaseModel):
@@ -31,6 +31,10 @@ class GEO1dConvModel(BaseModel):
                 plot_model(self.model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
 
         # TODO: check num_gpus
+        # On model saving
+        # To save the multi-gpu model, use .save(fname) or .save_weights(fname) 
+        # with the template model (the argument you passed to multi_gpu_model), 
+        # rather than the model returned by multi_gpu_model.
         self.model = multi_gpu_model(self.model, gpus=2)
 
         self.model.compile(

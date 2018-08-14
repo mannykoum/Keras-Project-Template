@@ -57,15 +57,16 @@ class SimpleMnistModelTrainerWGenerator(BaseTrain):
 
     def train(self):
         print("!!!!! ****  in train 1/2  **** !!!!")
+        # try:
         history = self.model.fit_generator(
             generator=self.train_generator,
             epochs=self.config.trainer.num_epochs,
-            steps_per_epoch=int(math.ceil(34564/float(self.config.trainer.batch_size))),
-            # math.ceil(len(os.listdir(self.config.data_loader.train_dir))\
+            # steps_per_epoch=int(math.ceil(34564/float(self.config.trainer.batch_size))),
+            # 34564 math.ceil(len(os.listdir(self.config.data_loader.train_dir))\
             #  / float(self.config.trainer.batch_size)), # WILL USE __len__() if left
             verbose=self.config.trainer.verbose_training,
             validation_data=self.validation_generator,
-            validation_steps=int(math.ceil(8640/float(self.config.trainer.batch_size))),
+            # validation_steps=int(math.ceil(8640/float(self.config.trainer.batch_size))),
             # math.ceil(len(os.listdir(self.config.data_loader.test_dir))\
             #  / float(self.config.trainer.batch_size)),
             callbacks=self.callbacks,
@@ -74,7 +75,10 @@ class SimpleMnistModelTrainerWGenerator(BaseTrain):
             # max_queue_size=20,
             shuffle=True
         )
-        print("!!!!! ****  in train 2/2  **** !!!!")
+        # except Exception as e:
+            # print("!!! some problem happened with fit_generator()")
+            # print(e)
+        print("!!!!! ****  in train 2/2  **** !!!!!")
         self.loss.extend(history.history['loss'])
         self.acc.extend(history.history['acc'])
         self.val_loss.extend(history.history['val_loss'])

@@ -6,7 +6,7 @@ from skimage import transform, io
 import numpy as np
 import math # for floor
 
-import os, re # for listdir, split
+import os # for listdir, split
 
 class GEO1dDataLoader2(BaseDataLoader):
     def __init__(self, config):
@@ -40,7 +40,7 @@ class GEO1dDataLoader2(BaseDataLoader):
         'Create the training data generator'
         print('Creating the training data generator')
         self.train_generator = datagen.flow_from_directory(
-                                self.config.data_loader.train_dir,
+                                directory=self.config.data_loader.train_dir,
                                 target_size=tgt_size,
                                 color_mode='grayscale',
                                 batch_size=self.config.trainer.batch_size,
@@ -49,7 +49,7 @@ class GEO1dDataLoader2(BaseDataLoader):
         'Create the testing data generator'
         print('Creating the testing data generator')
         self.test_generator = datagen.flow_from_directory(
-                                self.config.data_loader.test_dir,
+                                directory=self.config.data_loader.test_dir,
                                 target_size=tgt_size,
                                 color_mode='grayscale',
                                 batch_size=self.config.trainer.batch_size,

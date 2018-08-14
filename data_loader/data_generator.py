@@ -1,6 +1,6 @@
 import numpy as np
 from skimage import transform, io
-import keras
+import keras # for to_categorical
 
 class DataGenerator(keras.utils.Sequence):
     'Generates data for Keras'
@@ -59,7 +59,8 @@ class DataGenerator(keras.utils.Sequence):
         'Generates data containing batch_size samples' 
         # X : (n_samples, *dim, n_channels)
         # Initialization
-        X = np.empty((self.batch_size, *self.dim, self.n_channels))
+        # X = np.empty((self.batch_size, *self.dim, self.n_channels)) # Python 3
+        X = np.empty(self.tuple_wrap(self.batch_size, self.dim, self.n_channels)) # Python 2
         y = np.empty((self.batch_size), dtype=int)
         print('in data_gen')
         # Generate data
@@ -68,7 +69,8 @@ class DataGenerator(keras.utils.Sequence):
             # X[i,] = np.load('data/' + ID + '.npy')
             print('enumerating')
             X_tmp = np.array(io.imread(self.data_dir+ID+'.png', as_gray=True))
-            X[i,] = X_tmp.reshape(*self.dim, self.n_channels)
+            # X[i,] = X_tmp.reshape(*self.dim, self.n_channels) # Python 3
+            X[i,] = X_tmp.reshape(self.tuple_follow(self.dim, self.n_channels)) # Python 2
 
             # Store class directly from label dictionary
             y[i] = self.labels[ID]
@@ -84,3 +86,19 @@ class DataGenerator(keras.utils.Sequence):
         print('images shape:', type(X))
         print('labels shape:', type(y))
         # print('labels:', y)
+
+    def tuple_wrap(self, val1, tupl, val2):
+        'a wrapping function because unpacking doesn\'t work in Python-2.x'
+        lst = [val1]
+        for el in tupl:
+            lst.append(el)
+        lst.append(val2)
+        return tuple(lst)
+
+    def tuple_follow(self, tupl, val):
+        '''a function that adds a val to a tuple because 
+        unpacking doesn\'t work in Python-2.x'''
+        for el in tupl:
+            lst.append(el)
+        lst.append(val)
+        return tuple(lst)
