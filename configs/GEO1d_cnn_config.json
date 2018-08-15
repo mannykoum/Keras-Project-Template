@@ -6,19 +6,19 @@
   "data_loader": {
     "name": "geo1d_cnn_data_loader2.GEO1dDataLoader2",
     "input_shape": [-1, 256,256,1],
-    "train_dir":"/home/mannykoum/Manos_repos/tf_tutorial/GEO1d/data_labeled/valid/",
+    "train_dir":"/home/mannykoum/Manos_repos/tf_tutorial/GEO1d/data_labeled/train/",
     "test_dir":"/home/mannykoum/Manos_repos/tf_tutorial/GEO1d/data_labeled/valid/"
   },
   "model":{
     "name": "geo1d_cnn_model.GEO1dConvModel",
     "learning_rate": 0.001,
-    "optimizer": "adadelta",
+    "optimizer": "adam",
     "input_shape": [256,256,1],
     "output_shape": 36
   },
   "trainer":{
     "name": "simple_mnist_trainer_w_generator.SimpleMnistModelTrainerWGenerator",
-    "num_epochs": 2,
+    "num_epochs": 20,
     "batch_size": 16,
     "validation_split":0.25,
     "verbose_training": true
