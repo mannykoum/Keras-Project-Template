@@ -1,11 +1,12 @@
 import numpy as np
 from skimage import transform, io
-import keras # for to_categorical
+from sklearn import preprocessing # for label_binarizer
+from keras import utils # for Sequence, to_categorical
 
-class DataGenerator(keras.utils.Sequence):
+class DataGenerator(utils.Sequence):
     'Generates data for Keras'
     def __init__(self, list_IDs, labels, data_dir, batch_size=32, dim=(32,32,32), n_channels=1,
-                 n_classes=10, shuffle=True):
+                 n_classes=10, shuffle=True, class_mode=None):
         'Initialization'
         self.dim = dim
         self.batch_size = batch_size
@@ -18,12 +19,14 @@ class DataGenerator(keras.utils.Sequence):
         self.n_classes = n_classes
         self.shuffle = shuffle
         self.ctr = 0
-        print("initialized")
+        if class_mode:
+            self.encode_fcn = self.loss2encode(class_mode)
+        else: # default is categorical_crossentropy
+            self.encode_fcn = utils.to_categorical
         self.on_epoch_end()
 
     def __len__(self):
         'Denotes the number of batches per epoch'
-        print("length is : ", int(np.ceil(len(self.list_IDs) / float(self.batch_size))))
         return int(np.ceil(len(self.list_IDs) / float(self.batch_size)))
 
     def __getitem__(self, index):
@@ -33,23 +36,13 @@ class DataGenerator(keras.utils.Sequence):
 
         # Find list of IDs
         list_IDs_temp = [self.list_IDs[k] for k in indexes]
-        print('in get_item 1/2')
+
         # Generate data
         X, y = self.__data_generation(list_IDs_temp)
-        # print(X)
-        # print(Y)
-        # print("y LABELS have shape " + str(y.shape))
-        # print("get item called ", self.ctr, " times")
-        # self.data_summary(X, y)
-        # self.ctr+=1
-        # print(self.ctr, " steps up to this batch")
-        print('in get_item 2/2')
         return X, y
 
     def on_epoch_end(self):
         'Updates indexes after each epoch'
-        print("___----==== on epoch end called ====----____")
-        print(self.ctr, " steps this epoch")
         self.ctr = 0
         self.indexes = np.arange(len(self.list_IDs))
         if self.shuffle == True:
@@ -59,25 +52,42 @@ class DataGenerator(keras.utils.Sequence):
         'Generates data containing batch_size samples' 
         # X : (n_samples, *dim, n_channels)
         # Initialization
-        # X = np.empty((self.batch_size, *self.dim, self.n_channels)) # Python 3
-        X = np.empty(self.tuple_wrap(self.batch_size, self.dim, self.n_channels)) # Python 2
+        X = np.empty((self.batch_size, *self.dim, self.n_channels)) # Python 3
+        # X = np.empty(self.tuple_wrap(self.batch_size, self.dim, self.n_channels)) # Python 2
         y = np.empty((self.batch_size), dtype=int)
-        print('in data_gen')
+
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
             # Store sample
             # X[i,] = np.load('data/' + ID + '.npy')
-            print('enumerating')
             X_tmp = np.array(io.imread(self.data_dir+ID+'.png', as_gray=True))
-            # X[i,] = X_tmp.reshape(*self.dim, self.n_channels) # Python 3
-            X[i,] = X_tmp.reshape(self.tuple_follow(self.dim, self.n_channels)) # Python 2
+            X[i,] = X_tmp.reshape(*self.dim, self.n_channels) # Python 3
+            # X[i,] = X_tmp.reshape(self.tuple_follow(self.dim, self.n_channels)) # Python 2
 
             # Store class directly from label dictionary
             y[i] = self.labels[ID]
 
-        # print(keras.utils.to_categorical(y, num_classes=self.n_classes))
-        return X, keras.utils.to_categorical(y, num_classes=self.n_classes)
+        return X, self.encode_fcn(y, num_classes=self.n_classes)
 
+    def loss2encode(self, loss):
+        # TODO: add more
+        losses = {
+            "sparse_categorical_crossentropy": self.to_sparse,
+            "categorical_crossentropy": utils.to_categorical,
+            "binary_crossentropy": self.to_binary,
+        }
+        return losses[loss]
+
+    def to_sparse(self, y, num_classes=0):
+        # TODO: make this robust
+        for el in y:
+            el = int(el)
+        return y
+
+    def to_binary(self, y, num_classes=0):
+        # TODO: make this robust; now only works with numerical labels
+        classes = np.arange(num_classes)
+        return preprocessing.label_binarize(y, classes)
 
     def data_summary(self, X, y):
         """Summarize current state of dataset"""

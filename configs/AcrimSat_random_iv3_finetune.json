@@ -1,0 +1,42 @@
+{
+  "exp": {
+    "name": "AcrimSat-random-iv3-finetune",
+    "comet_api_key": "bRVfqqxqCjklK2gf4uLN9cuBZ"
+  },
+  "data_loader": {
+    "name": "iv3_data_loader.IV3DataLoader",
+    "input_shape": [-1, 256,256,3],
+    "train_dir":"/media/mannykoum/Data/synthetic_data/AcrS_all/train/",
+    "test_dir":"/media/mannykoum/Data/synthetic_data/AcrS_all/valid/"
+  },
+  "model":{
+    "name": "iv3_transfer_finetune.IV3TransferModel",
+    "loss":"sparse_categorical_crossentropy",
+    "save_plot": true,
+    "frozen_layers": 249,
+    "learning_rate": 1.0,
+    "rho": 0.95,
+    "optimizer": "adadelta",
+    "input_shape": [256,256,3],
+    "output_shape": 300,
+    "finetune": true
+  },
+  "trainer":{
+    "name": "simple_mnist_trainer_w_generator.SimpleMnistModelTrainerWGenerator",
+    "num_epochs": 20,
+    "batch_size": 64,
+    "verbose_training": true
+  },
+  "callbacks":{
+    "checkpoint_monitor": "val_loss",
+    "checkpoint_mode": "min",
+    "checkpoint_save_best_only": true,
+    "checkpoint_save_weights_only": true,
+    "checkpoint_verbose": true,
+    "tensorboard_write_graph": true,
+    "early_stopping_monitor": "val_loss",
+    "early_stopping_patience": 2,
+    "early_stopping_min_delta": 1e-4,
+    "early_stopping_verbose": true
+  }
+}

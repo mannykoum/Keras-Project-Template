@@ -23,7 +23,8 @@ class GEO1dDataLoader(BaseDataLoader):
                                 dim=[self.config.model.input_shape[0],self.config.model.input_shape[1]],
                                 n_channels=1,
                                 n_classes=self.config.model.output_shape,
-                                shuffle=False)
+                                shuffle=False,
+                                class_mode=self.config.model.loss)
 
         'Create the testing data generator'
         print('Creating the testing data generator')
@@ -37,7 +38,8 @@ class GEO1dDataLoader(BaseDataLoader):
                                 dim=[self.config.model.input_shape[0],self.config.model.input_shape[1]],
                                 n_channels=1,
                                 n_classes=self.config.model.output_shape,
-                                shuffle=False)
+                                shuffle=False,
+                                class_mode=self.config.model.loss)
 
     def get_train_data(self):
         return self.train_generator

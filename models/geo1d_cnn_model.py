@@ -40,6 +40,6 @@ class GEO1dConvModel(BaseModel):
         self.model = multi_gpu_model(self.model, gpus=2)
 
         self.model.compile(
-              loss='sparse_categorical_crossentropy',
+              loss=self.config.model.loss,
               optimizer=self.config.model.optimizer,
               metrics=['accuracy'])
